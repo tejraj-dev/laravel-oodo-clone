@@ -2,8 +2,8 @@
 
 namespace App\Modules\Approvals\Models;
 
-use App\Models\Traits\HasCompany;
-use App\Models\Traits\HasUuid;
+use App\Modules\Core\Traits\HasCompany;
+use App\Modules\Core\Traits\HasUuid;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

@@ -2,8 +2,8 @@
 
 namespace App\Modules\Documents\Models;
 
-use App\Models\Traits\HasCompany;
-use App\Models\Traits\HasUuid;
+use App\Modules\Core\Traits\HasCompany;
+use App\Modules\Core\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;

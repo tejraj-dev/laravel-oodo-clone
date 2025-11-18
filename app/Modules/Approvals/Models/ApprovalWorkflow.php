@@ -2,9 +2,9 @@
 
 namespace App\Modules\Approvals\Models;
 
-use App\Models\Traits\HasCompany;
-use App\Models\Traits\HasStatus;
-use App\Models\Traits\HasUuid;
+use App\Modules\Core\Traits\HasCompany;
+use App\Modules\Core\Traits\HasStatus;
+use App\Modules\Core\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
