@@ -41,7 +41,7 @@ return new class extends Migration
             $table->bigInteger('file_size'); // in bytes
             $table->string('mime_type');
             $table->integer('version_number')->default(1);
-            $table->foreignUuid('current_version_id')->nullable()->constrained('document_versions')->nullOnDelete();
+            $table->uuid('current_version_id')->nullable(); // Foreign key added later to avoid circular dependency
             $table->boolean('is_locked')->default(false);
             $table->foreignUuid('locked_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('locked_at')->nullable();
