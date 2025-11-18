@@ -1,0 +1,205 @@
+# Approvals Module Types
+
+type ApprovalWorkflow {
+    id: ID!
+    company_id: ID!
+    name: String!
+    description: String
+    entity_type: String!
+    workflow_type: String!
+    is_sequential: Boolean!
+    require_all_approvers: Boolean!
+    auto_approve_threshold: Float
+    auto_reject_threshold: Float
+    escalation_enabled: Boolean!
+    escalation_hours: Int
+    notification_enabled: Boolean!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ApprovalStep {
+    id: ID!
+    company_id: ID!
+    approval_workflow_id: ID!
+    workflow: ApprovalWorkflow
+    name: String!
+    description: String
+    step_order: Int!
+    approver_type: String!
+    approver_id: ID
+    approver: User
+    role_id: ID
+    required_approvals: Int!
+    allow_delegation: Boolean!
+    sla_hours: Int
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ApprovalRequest {
+    id: ID!
+    company_id: ID!
+    approval_workflow_id: ID!
+    workflow: ApprovalWorkflow
+    requester_id: ID!
+    requester: User
+    request_number: String!
+    subject: String!
+    description: String
+    entity_type: String!
+    entity_id: ID!
+    current_step_id: ID
+    current_step: ApprovalStep
+    priority: String!
+    status: String!
+    submitted_at: DateTime
+    completed_at: DateTime
+    approved_at: DateTime
+    rejected_at: DateTime
+    cancelled_at: DateTime
+    total_steps: Int!
+    completed_steps: Int!
+    rejected_by: ID
+    rejection_reason: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ApprovalAction {
+    id: ID!
+    company_id: ID!
+    approval_request_id: ID!
+    request: ApprovalRequest
+    approval_step_id: ID!
+    step: ApprovalStep
+    user_id: ID!
+    user: User
+    delegated_from: ID
+    action: String!
+    comments: String
+    action_at: DateTime!
+    ip_address: String
+    user_agent: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ApprovalRule {
+    id: ID!
+    company_id: ID!
+    approval_workflow_id: ID!
+    workflow: ApprovalWorkflow
+    name: String!
+    description: String
+    condition_field: String!
+    condition_operator: String!
+    condition_value: String!
+    rule_type: String!
+    priority: Int!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ApprovalDelegate {
+    id: ID!
+    company_id: ID!
+    delegator_id: ID!
+    delegator: User
+    delegate_id: ID!
+    delegate: User
+    approval_workflow_id: ID
+    workflow: ApprovalWorkflow
+    reason: String
+    start_date: Date
+    end_date: Date
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Inputs
+
+input CreateApprovalWorkflowInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    description: String
+    entity_type: String! @rules(apply: ["required"])
+    workflow_type: String
+    is_sequential: Boolean
+    require_all_approvers: Boolean
+    escalation_enabled: Boolean
+    notification_enabled: Boolean
+}
+
+input UpdateApprovalWorkflowInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    is_sequential: Boolean
+    escalation_enabled: Boolean
+    is_active: Boolean
+}
+
+input CreateApprovalRequestInput {
+    company_id: ID!
+    approval_workflow_id: ID!
+    requester_id: ID!
+    subject: String! @rules(apply: ["required"])
+    description: String
+    entity_type: String! @rules(apply: ["required"])
+    entity_id: ID!
+    priority: String
+}
+
+input ApproveRequestInput {
+    user_id: ID!
+    comments: String
+}
+
+input RejectRequestInput {
+    user_id: ID!
+    reason: String! @rules(apply: ["required"])
+}
+
+# Queries
+
+extend type Query {
+    approvalWorkflows(entity_type: String @eq): [ApprovalWorkflow!]! @paginate(defaultCount: 15) @guard
+    approvalWorkflow(id: ID! @eq): ApprovalWorkflow @find @guard
+
+    approvalSteps(approval_workflow_id: ID! @eq): [ApprovalStep!]! @paginate(defaultCount: 15) @guard
+    approvalStep(id: ID! @eq): ApprovalStep @find @guard
+
+    approvalRequests(
+        status: String @eq
+        requester_id: ID @eq
+        entity_type: String @eq
+    ): [ApprovalRequest!]! @paginate(defaultCount: 15) @guard
+    approvalRequest(id: ID! @eq): ApprovalRequest @find @guard
+
+    approvalActions(approval_request_id: ID! @eq): [ApprovalAction!]! @paginate(defaultCount: 15) @guard
+
+    approvalRules(approval_workflow_id: ID! @eq): [ApprovalRule!]! @paginate(defaultCount: 15) @guard
+    approvalRule(id: ID! @eq): ApprovalRule @find @guard
+
+    approvalDelegates(
+        delegator_id: ID @eq
+        delegate_id: ID @eq
+    ): [ApprovalDelegate!]! @paginate(defaultCount: 15) @guard
+    approvalDelegate(id: ID! @eq): ApprovalDelegate @find @guard
+}
+
+# Mutations
+
+extend type Mutation {
+    createApprovalWorkflow(input: CreateApprovalWorkflowInput! @spread): ApprovalWorkflow! @create @guard
+    updateApprovalWorkflow(id: ID!, input: UpdateApprovalWorkflowInput! @spread): ApprovalWorkflow! @update @guard
+    deleteApprovalWorkflow(id: ID!): ApprovalWorkflow @delete @guard
+
+    createApprovalRequest(input: CreateApprovalRequestInput! @spread): ApprovalRequest! @create @guard
+    approveRequest(id: ID!, input: ApproveRequestInput! @spread): ApprovalRequest! @guard
+    rejectRequest(id: ID!, input: RejectRequestInput! @spread): ApprovalRequest! @guard
+}
