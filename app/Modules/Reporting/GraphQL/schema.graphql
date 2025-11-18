@@ -1,0 +1,181 @@
+# Reporting Module Types
+type Report {
+    id: ID!
+    company_id: ID!
+    user_id: ID!
+    report_template_id: ID
+    name: String!
+    description: String
+    report_type: String!
+    data_source: String!
+    chart_type: String
+    is_public: Boolean!
+    is_favorite: Boolean!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Dashboard {
+    id: ID!
+    company_id: ID!
+    user_id: ID!
+    name: String!
+    description: String
+    refresh_interval: Int
+    is_default: Boolean!
+    is_public: Boolean!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type KPI {
+    id: ID!
+    company_id: ID!
+    name: String!
+    description: String
+    category: String!
+    metric_type: String!
+    data_source: String!
+    target_value: Float
+    current_value: Float
+    unit: String
+    trend: String
+    comparison_period: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ReportTemplate {
+    id: ID!
+    company_id: ID!
+    name: String!
+    description: String
+    category: String!
+    report_type: String!
+    data_source: String!
+    is_system_template: Boolean!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ScheduledReport {
+    id: ID!
+    company_id: ID!
+    report_id: ID!
+    user_id: ID!
+    name: String!
+    schedule_type: String!
+    export_format: String!
+    last_run_at: DateTime
+    next_run_at: DateTime
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Widget {
+    id: ID!
+    dashboard_id: ID!
+    report_id: ID
+    kpi_id: ID
+    name: String!
+    widget_type: String!
+    position_x: Int!
+    position_y: Int!
+    width: Int!
+    height: Int!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Reporting Module Inputs
+input CreateReportInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    description: String
+    report_type: String! @rules(apply: ["required"])
+    data_source: String! @rules(apply: ["required"])
+    chart_type: String
+    is_public: Boolean
+}
+
+input UpdateReportInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    is_public: Boolean
+    is_favorite: Boolean
+    is_active: Boolean
+}
+
+input CreateDashboardInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    description: String
+    is_default: Boolean
+    is_public: Boolean
+}
+
+input UpdateDashboardInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    is_default: Boolean
+    is_public: Boolean
+    is_active: Boolean
+}
+
+input CreateKPIInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    description: String
+    category: String! @rules(apply: ["required"])
+    metric_type: String! @rules(apply: ["required"])
+    data_source: String! @rules(apply: ["required"])
+    target_value: Float
+}
+
+input UpdateKPIInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    target_value: Float
+    current_value: Float
+    is_active: Boolean
+}
+
+extend type Query {
+    reports: [Report!]! @paginate(defaultCount: 15) @guard
+    report(id: ID! @eq): Report @find @guard
+
+    dashboards: [Dashboard!]! @paginate(defaultCount: 15) @guard
+    dashboard(id: ID! @eq): Dashboard @find @guard
+
+    kpis: [KPI!]! @paginate(defaultCount: 15) @guard
+    kpi(id: ID! @eq): KPI @find @guard
+
+    reportTemplates: [ReportTemplate!]! @paginate(defaultCount: 15) @guard
+    reportTemplate(id: ID! @eq): ReportTemplate @find @guard
+
+    scheduledReports: [ScheduledReport!]! @paginate(defaultCount: 15) @guard
+    scheduledReport(id: ID! @eq): ScheduledReport @find @guard
+
+    widgets: [Widget!]! @paginate(defaultCount: 15) @guard
+    widget(id: ID! @eq): Widget @find @guard
+}
+
+extend type Mutation {
+    createReport(input: CreateReportInput! @spread): Report! @create @guard
+    updateReport(id: ID!, input: UpdateReportInput! @spread): Report! @update @guard
+    deleteReport(id: ID!): Report @delete @guard
+
+    createDashboard(input: CreateDashboardInput! @spread): Dashboard! @create @guard
+    updateDashboard(id: ID!, input: UpdateDashboardInput! @spread): Dashboard! @update @guard
+    deleteDashboard(id: ID!): Dashboard @delete @guard
+
+    createKPI(input: CreateKPIInput! @spread): KPI! @create @guard
+    updateKPI(id: ID!, input: UpdateKPIInput! @spread): KPI! @update @guard
+    deleteKPI(id: ID!): KPI @delete @guard
+}
