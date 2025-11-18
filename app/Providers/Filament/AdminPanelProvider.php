@@ -44,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Modules/Reporting/Filament/Resources'), for: 'App\\Modules\\Reporting\\Filament\\Resources')
             ->discoverResources(in: app_path('Modules/Notifications/Filament/Resources'), for: 'App\\Modules\\Notifications\\Filament\\Resources')
             ->discoverResources(in: app_path('Modules/Email/Filament/Resources'), for: 'App\\Modules\\Email\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/Documents/Filament/Resources'), for: 'App\\Modules\\Documents\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
@@ -67,6 +68,7 @@ class AdminPanelProvider extends PanelProvider
                 'Reporting',
                 'Notifications',
                 'Email',
+                'Documents',
                 'Settings',
             ])
             ->middleware([

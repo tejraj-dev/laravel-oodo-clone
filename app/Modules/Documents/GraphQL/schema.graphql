@@ -1,0 +1,175 @@
+# Documents Module Types
+
+type DocumentCategory {
+    id: ID!
+    company_id: ID!
+    parent_id: ID
+    parent: DocumentCategory
+    name: String!
+    code: String!
+    description: String
+    icon: String
+    color: String
+    sort_order: Int!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Document {
+    id: ID!
+    company_id: ID!
+    document_category_id: ID
+    category: DocumentCategory
+    user_id: ID!
+    user: User
+    name: String!
+    description: String
+    file_name: String!
+    file_path: String!
+    file_type: String
+    file_size: Int!
+    mime_type: String!
+    version_number: Int!
+    is_locked: Boolean!
+    expires_at: DateTime
+    approval_status: String!
+    visibility: String!
+    download_count: Int!
+    view_count: Int!
+    is_featured: Boolean!
+    is_active: Boolean!
+    related_type: String
+    related_id: ID
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type DocumentVersion {
+    id: ID!
+    company_id: ID!
+    document_id: ID!
+    document: Document
+    user_id: ID!
+    user: User
+    version_number: Int!
+    file_name: String!
+    file_path: String!
+    file_size: Int!
+    mime_type: String!
+    change_summary: String
+    is_current: Boolean!
+    checksum: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type DocumentTag {
+    id: ID!
+    company_id: ID!
+    name: String!
+    slug: String!
+    color: String
+    description: String
+    usage_count: Int!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type DocumentPermission {
+    id: ID!
+    company_id: ID!
+    document_id: ID!
+    document: Document
+    user_id: ID
+    user: User
+    role_id: ID
+    permission_type: String!
+    can_view: Boolean!
+    can_download: Boolean!
+    can_edit: Boolean!
+    can_delete: Boolean!
+    can_share: Boolean!
+    expires_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Inputs
+
+input CreateDocumentCategoryInput {
+    company_id: ID!
+    parent_id: ID
+    name: String! @rules(apply: ["required", "max:255"])
+    code: String! @rules(apply: ["required", "unique:document_categories,code"])
+    description: String
+    icon: String
+    color: String
+    sort_order: Int
+}
+
+input UpdateDocumentCategoryInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    icon: String
+    color: String
+    is_active: Boolean
+}
+
+input CreateDocumentInput {
+    company_id: ID!
+    document_category_id: ID
+    user_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    description: String
+    file_name: String! @rules(apply: ["required"])
+    file_path: String! @rules(apply: ["required"])
+    file_type: String
+    file_size: Int!
+    mime_type: String!
+    visibility: String
+}
+
+input UpdateDocumentInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    document_category_id: ID
+    visibility: String
+    expires_at: DateTime
+    is_active: Boolean
+}
+
+# Queries
+
+extend type Query {
+    documentCategories: [DocumentCategory!]! @paginate(defaultCount: 15) @guard
+    documentCategory(id: ID! @eq): DocumentCategory @find @guard
+
+    documents(
+        document_category_id: ID @eq
+        approval_status: String @eq
+        visibility: String @eq
+    ): [Document!]! @paginate(defaultCount: 15) @guard
+    document(id: ID! @eq): Document @find @guard
+
+    documentVersions(document_id: ID! @eq): [DocumentVersion!]! @paginate(defaultCount: 15) @guard
+    documentVersion(id: ID! @eq): DocumentVersion @find @guard
+
+    documentTags: [DocumentTag!]! @paginate(defaultCount: 15) @guard
+    documentTag(id: ID! @eq): DocumentTag @find @guard
+
+    documentPermissions(document_id: ID! @eq): [DocumentPermission!]! @paginate(defaultCount: 15) @guard
+    documentPermission(id: ID! @eq): DocumentPermission @find @guard
+}
+
+# Mutations
+
+extend type Mutation {
+    createDocumentCategory(input: CreateDocumentCategoryInput! @spread): DocumentCategory! @create @guard
+    updateDocumentCategory(id: ID!, input: UpdateDocumentCategoryInput! @spread): DocumentCategory! @update @guard
+    deleteDocumentCategory(id: ID!): DocumentCategory @delete @guard
+
+    createDocument(input: CreateDocumentInput! @spread): Document! @create @guard
+    updateDocument(id: ID!, input: UpdateDocumentInput! @spread): Document! @update @guard
+    deleteDocument(id: ID!): Document @delete @guard
+}
