@@ -64,7 +64,7 @@ class KPIResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListKpiss::route('/'),
+            'index' => Pages\ListKpis::route('/'),
             'create' => Pages\CreateKPI::route('/create'),
             'edit' => Pages\EditKPI::route('/{record}/edit'),
         ];

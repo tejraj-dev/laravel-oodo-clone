@@ -1,0 +1,257 @@
+# Notifications Module Types
+
+type NotificationTemplate {
+    id: ID!
+    company_id: ID!
+    name: String!
+    code: String!
+    description: String
+    type: String!
+    channels: [String!]!
+    subject: String
+    message_template: String!
+    email_template: String
+    sms_template: String
+    variables: [String!]
+    icon: String
+    priority: String!
+    action_url_template: String
+    action_text: String
+    is_system_template: Boolean!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Notification {
+    id: ID!
+    company_id: ID!
+    user_id: ID!
+    user: User
+    notification_template_id: ID
+    template: NotificationTemplate
+    type: String!
+    channel: String!
+    title: String!
+    message: String!
+    action_url: String
+    action_text: String
+    icon: String
+    priority: String!
+    is_read: Boolean!
+    read_at: DateTime
+    sent_at: DateTime
+    failed_at: DateTime
+    failure_reason: String
+    related_type: String
+    related_id: ID
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type NotificationPreference {
+    id: ID!
+    company_id: ID!
+    user_id: ID!
+    user: User
+    notification_type: String!
+    channel_database: Boolean!
+    channel_email: Boolean!
+    channel_sms: Boolean!
+    channel_push: Boolean!
+    channel_slack: Boolean!
+    frequency: String!
+    quiet_hours_start: String
+    quiet_hours_end: String
+    is_enabled: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ScheduledNotification {
+    id: ID!
+    company_id: ID!
+    user_id: ID!
+    user: User
+    notification_template_id: ID
+    template: NotificationTemplate
+    name: String!
+    type: String!
+    channels: [String!]!
+    title: String!
+    message: String!
+    action_url: String
+    action_text: String
+    icon: String
+    priority: String!
+    schedule_type: String!
+    scheduled_at: DateTime
+    recurrence_rule: String
+    recipient_type: String!
+    last_sent_at: DateTime
+    next_send_at: DateTime
+    send_count: Int!
+    max_send_count: Int
+    is_active: Boolean!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Inputs
+
+input CreateNotificationTemplateInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    code: String! @rules(apply: ["required", "unique:notification_templates,code"])
+    description: String
+    type: String! @rules(apply: ["required"])
+    channels: [String!]! @rules(apply: ["required"])
+    subject: String
+    message_template: String! @rules(apply: ["required"])
+    email_template: String
+    sms_template: String
+    variables: [String!]
+    icon: String
+    priority: String
+    action_url_template: String
+    action_text: String
+}
+
+input UpdateNotificationTemplateInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    channels: [String!]
+    subject: String
+    message_template: String
+    email_template: String
+    sms_template: String
+    variables: [String!]
+    priority: String
+    is_active: Boolean
+}
+
+input CreateNotificationInput {
+    company_id: ID!
+    user_id: ID!
+    notification_template_id: ID
+    type: String! @rules(apply: ["required"])
+    channel: String! @rules(apply: ["required"])
+    title: String! @rules(apply: ["required", "max:255"])
+    message: String! @rules(apply: ["required"])
+    action_url: String
+    action_text: String
+    icon: String
+    priority: String
+}
+
+input UpdateNotificationInput {
+    title: String @rules(apply: ["max:255"])
+    message: String
+    is_read: Boolean
+    priority: String
+}
+
+input CreateNotificationPreferenceInput {
+    company_id: ID!
+    user_id: ID!
+    notification_type: String! @rules(apply: ["required"])
+    channel_database: Boolean
+    channel_email: Boolean
+    channel_sms: Boolean
+    channel_push: Boolean
+    channel_slack: Boolean
+    frequency: String
+}
+
+input UpdateNotificationPreferenceInput {
+    channel_database: Boolean
+    channel_email: Boolean
+    channel_sms: Boolean
+    channel_push: Boolean
+    channel_slack: Boolean
+    frequency: String
+    is_enabled: Boolean
+}
+
+input CreateScheduledNotificationInput {
+    company_id: ID!
+    user_id: ID!
+    notification_template_id: ID
+    name: String! @rules(apply: ["required", "max:255"])
+    type: String! @rules(apply: ["required"])
+    channels: [String!]! @rules(apply: ["required"])
+    title: String! @rules(apply: ["required"])
+    message: String! @rules(apply: ["required"])
+    action_url: String
+    action_text: String
+    priority: String
+    schedule_type: String! @rules(apply: ["required"])
+    scheduled_at: DateTime
+    recurrence_rule: String
+    recipient_type: String
+    max_send_count: Int
+}
+
+input UpdateScheduledNotificationInput {
+    name: String @rules(apply: ["max:255"])
+    title: String
+    message: String
+    schedule_type: String
+    scheduled_at: DateTime
+    is_active: Boolean
+    status: String
+}
+
+# Queries
+
+extend type Query {
+    notificationTemplates: [NotificationTemplate!]! @paginate(defaultCount: 15) @guard
+    notificationTemplate(id: ID! @eq): NotificationTemplate @find @guard
+
+    notifications(
+        user_id: ID @eq
+        type: String @eq
+        is_read: Boolean @eq
+        priority: String @eq
+    ): [Notification!]! @paginate(defaultCount: 15) @guard
+
+    notification(id: ID! @eq): Notification @find @guard
+
+    unreadNotifications(user_id: ID! @eq): [Notification!]!
+        @paginate(defaultCount: 15)
+        @where(column: "is_read", value: false)
+        @guard
+
+    unreadNotificationCount(user_id: ID! @eq): Int! @count @guard
+
+    notificationPreferences(user_id: ID @eq): [NotificationPreference!]! @paginate(defaultCount: 15) @guard
+    notificationPreference(id: ID! @eq): NotificationPreference @find @guard
+
+    scheduledNotifications: [ScheduledNotification!]! @paginate(defaultCount: 15) @guard
+    scheduledNotification(id: ID! @eq): ScheduledNotification @find @guard
+}
+
+# Mutations
+
+extend type Mutation {
+    createNotificationTemplate(input: CreateNotificationTemplateInput! @spread): NotificationTemplate! @create @guard
+    updateNotificationTemplate(id: ID!, input: UpdateNotificationTemplateInput! @spread): NotificationTemplate! @update @guard
+    deleteNotificationTemplate(id: ID!): NotificationTemplate @delete @guard
+
+    createNotification(input: CreateNotificationInput! @spread): Notification! @create @guard
+    updateNotification(id: ID!, input: UpdateNotificationInput! @spread): Notification! @update @guard
+    deleteNotification(id: ID!): Notification @delete @guard
+
+    markNotificationAsRead(id: ID!): Notification @guard
+    markNotificationAsUnread(id: ID!): Notification @guard
+    markAllNotificationsAsRead(user_id: ID!): Boolean @guard
+
+    createNotificationPreference(input: CreateNotificationPreferenceInput! @spread): NotificationPreference! @create @guard
+    updateNotificationPreference(id: ID!, input: UpdateNotificationPreferenceInput! @spread): NotificationPreference! @update @guard
+    deleteNotificationPreference(id: ID!): NotificationPreference @delete @guard
+
+    createScheduledNotification(input: CreateScheduledNotificationInput! @spread): ScheduledNotification! @create @guard
+    updateScheduledNotification(id: ID!, input: UpdateScheduledNotificationInput! @spread): ScheduledNotification! @update @guard
+    deleteScheduledNotification(id: ID!): ScheduledNotification @delete @guard
+}

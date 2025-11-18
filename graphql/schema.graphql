@@ -15,6 +15,7 @@ scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
 #import ../app/Modules/Accounting/GraphQL/schema.graphql
 #import ../app/Modules/POS/GraphQL/schema.graphql
 #import ../app/Modules/Reporting/GraphQL/schema.graphql
+#import ../app/Modules/Notifications/GraphQL/schema.graphql
 
 type Query {
     # User queries
