@@ -1,0 +1,273 @@
+# Email Module Types
+
+type EmailTemplate {
+    id: ID!
+    company_id: ID!
+    name: String!
+    code: String!
+    description: String
+    category: String!
+    subject: String!
+    body_html: String!
+    body_text: String
+    variables: [String!]
+    from_name: String
+    from_email: String
+    reply_to: String
+    is_system_template: Boolean!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type EmailCampaign {
+    id: ID!
+    company_id: ID!
+    user_id: ID!
+    user: User
+    email_template_id: ID
+    template: EmailTemplate
+    name: String!
+    description: String
+    campaign_type: String!
+    subject: String!
+    body_html: String!
+    body_text: String
+    from_name: String!
+    from_email: String!
+    reply_to: String
+    recipient_list_type: String!
+    recipient_count: Int!
+    scheduled_at: DateTime
+    sent_at: DateTime
+    completed_at: DateTime
+    total_sent: Int!
+    total_delivered: Int!
+    total_opened: Int!
+    total_clicked: Int!
+    total_bounced: Int!
+    total_unsubscribed: Int!
+    total_failed: Int!
+    open_rate: Float!
+    click_rate: Float!
+    status: String!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type EmailMessage {
+    id: ID!
+    company_id: ID!
+    email_template_id: ID
+    template: EmailTemplate
+    email_campaign_id: ID
+    campaign: EmailCampaign
+    message_id: String
+    subject: String!
+    body_html: String!
+    from_name: String!
+    from_email: String!
+    to_email: String!
+    to_name: String
+    status: String!
+    sent_at: DateTime
+    delivered_at: DateTime
+    opened_at: DateTime
+    clicked_at: DateTime
+    bounced_at: DateTime
+    failed_at: DateTime
+    error_message: String
+    related_type: String
+    related_id: ID
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type SmtpConfiguration {
+    id: ID!
+    company_id: ID!
+    name: String!
+    driver: String!
+    host: String!
+    port: Int!
+    username: String
+    encryption: String
+    from_name: String!
+    from_email: String!
+    is_default: Boolean!
+    is_active: Boolean!
+    daily_limit: Int
+    hourly_limit: Int
+    emails_sent_today: Int!
+    emails_sent_this_hour: Int!
+    last_used_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type AutoResponder {
+    id: ID!
+    company_id: ID!
+    email_template_id: ID
+    template: EmailTemplate
+    name: String!
+    description: String
+    trigger_type: String!
+    delay_minutes: Int!
+    subject: String!
+    body_html: String!
+    from_name: String!
+    from_email: String!
+    max_sends_per_recipient: Int!
+    is_active: Boolean!
+    sent_count: Int!
+    last_sent_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Inputs
+
+input CreateEmailTemplateInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    code: String! @rules(apply: ["required", "unique:email_templates,code"])
+    description: String
+    category: String! @rules(apply: ["required"])
+    subject: String! @rules(apply: ["required"])
+    body_html: String! @rules(apply: ["required"])
+    body_text: String
+    variables: [String!]
+    from_name: String
+    from_email: String
+}
+
+input UpdateEmailTemplateInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    category: String
+    subject: String
+    body_html: String
+    body_text: String
+    is_active: Boolean
+}
+
+input CreateEmailCampaignInput {
+    company_id: ID!
+    user_id: ID!
+    email_template_id: ID
+    name: String! @rules(apply: ["required", "max:255"])
+    description: String
+    campaign_type: String! @rules(apply: ["required"])
+    subject: String! @rules(apply: ["required"])
+    body_html: String! @rules(apply: ["required"])
+    body_text: String
+    from_name: String! @rules(apply: ["required"])
+    from_email: String! @rules(apply: ["required", "email"])
+    reply_to: String
+    recipient_list_type: String! @rules(apply: ["required"])
+    scheduled_at: DateTime
+}
+
+input UpdateEmailCampaignInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    subject: String
+    body_html: String
+    scheduled_at: DateTime
+    status: String
+}
+
+input CreateSmtpConfigurationInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    driver: String!
+    host: String! @rules(apply: ["required"])
+    port: Int! @rules(apply: ["required"])
+    username: String
+    password: String
+    encryption: String
+    from_name: String! @rules(apply: ["required"])
+    from_email: String! @rules(apply: ["required", "email"])
+    daily_limit: Int
+    hourly_limit: Int
+}
+
+input UpdateSmtpConfigurationInput {
+    name: String @rules(apply: ["max:255"])
+    host: String
+    port: Int
+    username: String
+    password: String
+    encryption: String
+    is_active: Boolean
+}
+
+input CreateAutoResponderInput {
+    company_id: ID!
+    email_template_id: ID
+    name: String! @rules(apply: ["required", "max:255"])
+    description: String
+    trigger_type: String! @rules(apply: ["required"])
+    delay_minutes: Int
+    subject: String! @rules(apply: ["required"])
+    body_html: String! @rules(apply: ["required"])
+    from_name: String! @rules(apply: ["required"])
+    from_email: String! @rules(apply: ["required", "email"])
+    max_sends_per_recipient: Int
+}
+
+input UpdateAutoResponderInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    delay_minutes: Int
+    subject: String
+    body_html: String
+    is_active: Boolean
+}
+
+# Queries
+
+extend type Query {
+    emailTemplates(category: String @eq): [EmailTemplate!]! @paginate(defaultCount: 15) @guard
+    emailTemplate(id: ID! @eq): EmailTemplate @find @guard
+
+    emailCampaigns(
+        campaign_type: String @eq
+        status: String @eq
+    ): [EmailCampaign!]! @paginate(defaultCount: 15) @guard
+    emailCampaign(id: ID! @eq): EmailCampaign @find @guard
+
+    emailMessages(
+        status: String @eq
+        email_campaign_id: ID @eq
+    ): [EmailMessage!]! @paginate(defaultCount: 15) @guard
+    emailMessage(id: ID! @eq): EmailMessage @find @guard
+
+    smtpConfigurations: [SmtpConfiguration!]! @paginate(defaultCount: 15) @guard
+    smtpConfiguration(id: ID! @eq): SmtpConfiguration @find @guard
+
+    autoResponders(trigger_type: String @eq): [AutoResponder!]! @paginate(defaultCount: 15) @guard
+    autoResponder(id: ID! @eq): AutoResponder @find @guard
+}
+
+# Mutations
+
+extend type Mutation {
+    createEmailTemplate(input: CreateEmailTemplateInput! @spread): EmailTemplate! @create @guard
+    updateEmailTemplate(id: ID!, input: UpdateEmailTemplateInput! @spread): EmailTemplate! @update @guard
+    deleteEmailTemplate(id: ID!): EmailTemplate @delete @guard
+
+    createEmailCampaign(input: CreateEmailCampaignInput! @spread): EmailCampaign! @create @guard
+    updateEmailCampaign(id: ID!, input: UpdateEmailCampaignInput! @spread): EmailCampaign! @update @guard
+    deleteEmailCampaign(id: ID!): EmailCampaign @delete @guard
+
+    createSmtpConfiguration(input: CreateSmtpConfigurationInput! @spread): SmtpConfiguration! @create @guard
+    updateSmtpConfiguration(id: ID!, input: UpdateSmtpConfigurationInput! @spread): SmtpConfiguration! @update @guard
+    deleteSmtpConfiguration(id: ID!): SmtpConfiguration @delete @guard
+
+    createAutoResponder(input: CreateAutoResponderInput! @spread): AutoResponder! @create @guard
+    updateAutoResponder(id: ID!, input: UpdateAutoResponderInput! @spread): AutoResponder! @update @guard
+    deleteAutoResponder(id: ID!): AutoResponder @delete @guard
+}

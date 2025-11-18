@@ -29,7 +29,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 });
 
 // Load module routes
-$modules = ['Core', 'CRM', 'Sales', 'Purchase', 'Inventory', 'HR', 'Projects', 'Manufacturing', 'Accounting', 'POS', 'Reporting', 'Notifications'];
+$modules = ['Core', 'CRM', 'Sales', 'Purchase', 'Inventory', 'HR', 'Projects', 'Manufacturing', 'Accounting', 'POS', 'Reporting', 'Notifications', 'Email'];
 
 foreach ($modules as $module) {
     $moduleApiRoutes = app_path("Modules/{$module}/routes/api.php");
