@@ -40,6 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Modules/Projects/Filament/Resources'), for: 'App\\Modules\\Projects\\Filament\\Resources')
             ->discoverResources(in: app_path('Modules/Manufacturing/Filament/Resources'), for: 'App\\Modules\\Manufacturing\\Filament\\Resources')
             ->discoverResources(in: app_path('Modules/Accounting/Filament/Resources'), for: 'App\\Modules\\Accounting\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/POS/Filament/Resources'), for: 'App\\Modules\\POS\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
@@ -51,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Dashboard',
+                'POS',
                 'CRM',
                 'Sales',
                 'Purchase',
