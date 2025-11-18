@@ -16,13 +16,14 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\File;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        $panelConfig = $panel
             ->default()
             ->id('admin')
             ->path('admin')
@@ -30,23 +31,12 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Core/Filament/Resources'), for: 'App\\Modules\\Core\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/CRM/Filament/Resources'), for: 'App\\Modules\\CRM\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Sales/Filament/Resources'), for: 'App\\Modules\\Sales\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Purchase/Filament/Resources'), for: 'App\\Modules\\Purchase\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Inventory/Filament/Resources'), for: 'App\\Modules\\Inventory\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/HR/Filament/Resources'), for: 'App\\Modules\\HR\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Projects/Filament/Resources'), for: 'App\\Modules\\Projects\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Manufacturing/Filament/Resources'), for: 'App\\Modules\\Manufacturing\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Accounting/Filament/Resources'), for: 'App\\Modules\\Accounting\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/POS/Filament/Resources'), for: 'App\\Modules\\POS\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Reporting/Filament/Resources'), for: 'App\\Modules\\Reporting\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Notifications/Filament/Resources'), for: 'App\\Modules\\Notifications\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Email/Filament/Resources'), for: 'App\\Modules\\Email\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Documents/Filament/Resources'), for: 'App\\Modules\\Documents\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/Approvals/Filament/Resources'), for: 'App\\Modules\\Approvals\\Filament\\Resources')
-            ->discoverResources(in: app_path('Modules/ImportExport/Filament/Resources'), for: 'App\\Modules\\ImportExport\\Filament\\Resources')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources');
+
+        // Auto-discover module resources
+        $panelConfig = $this->discoverModuleResources($panelConfig);
+
+        return $panelConfig
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
@@ -56,25 +46,7 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
-            ->navigationGroups([
-                'Dashboard',
-                'POS',
-                'CRM',
-                'Sales',
-                'Purchase',
-                'Inventory',
-                'Manufacturing',
-                'HR',
-                'Projects',
-                'Accounting',
-                'Reporting',
-                'Notifications',
-                'Email',
-                'Documents',
-                'Approvals',
-                'Import/Export',
-                'Settings',
-            ])
+            ->navigationGroups($this->getNavigationGroups())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -92,5 +64,90 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->brandName('Laravel ERP')
             ->favicon(asset('favicon.ico'));
+    }
+
+    /**
+     * Auto-discover and register module resources
+     */
+    protected function discoverModuleResources(Panel $panel): Panel
+    {
+        $modulesPath = app_path('Modules');
+
+        if (!is_dir($modulesPath)) {
+            return $panel;
+        }
+
+        $modules = File::directories($modulesPath);
+
+        foreach ($modules as $modulePath) {
+            $moduleName = basename($modulePath);
+            $resourcesPath = "{$modulePath}/Filament/Resources";
+
+            // Check if module is enabled
+            $configPath = "{$modulePath}/config.php";
+            if (file_exists($configPath)) {
+                $config = require $configPath;
+                if (!($config['enabled'] ?? true)) {
+                    continue;
+                }
+            }
+
+            // Discover resources if directory exists
+            if (is_dir($resourcesPath)) {
+                $panel->discoverResources(
+                    in: $resourcesPath,
+                    for: "App\\Modules\\{$moduleName}\\Filament\\Resources"
+                );
+            }
+        }
+
+        return $panel;
+    }
+
+    /**
+     * Get navigation groups from enabled modules
+     */
+    protected function getNavigationGroups(): array
+    {
+        $groups = ['Dashboard'];
+        $modulesPath = app_path('Modules');
+
+        if (!is_dir($modulesPath)) {
+            return array_merge($groups, ['Settings']);
+        }
+
+        $modules = File::directories($modulesPath);
+        $moduleGroups = [];
+
+        foreach ($modules as $modulePath) {
+            $moduleName = basename($modulePath);
+            $configPath = "{$modulePath}/config.php";
+
+            if (file_exists($configPath)) {
+                $config = require $configPath;
+
+                if ($config['enabled'] ?? true) {
+                    $navigationGroup = $config['navigation_group'] ?? $moduleName;
+                    $sortOrder = $config['navigation_sort'] ?? 100;
+
+                    $moduleGroups[] = [
+                        'name' => $navigationGroup,
+                        'sort' => $sortOrder,
+                    ];
+                }
+            }
+        }
+
+        // Sort by sort order
+        usort($moduleGroups, fn($a, $b) => $a['sort'] <=> $b['sort']);
+
+        // Extract names
+        $groups = array_merge(
+            $groups,
+            array_map(fn($group) => $group['name'], $moduleGroups),
+            ['Settings']
+        );
+
+        return $groups;
     }
 }

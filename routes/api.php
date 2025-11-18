@@ -28,12 +28,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('/revoke-all', [AuthController::class, 'revokeAll']);
 });
 
-// Load module routes
-$modules = ['Core', 'CRM', 'Sales', 'Purchase', 'Inventory', 'HR', 'Projects', 'Manufacturing', 'Accounting', 'POS', 'Reporting', 'Notifications', 'Email', 'Documents', 'Approvals', 'ImportExport'];
-
-foreach ($modules as $module) {
-    $moduleApiRoutes = app_path("Modules/{$module}/routes/api.php");
-    if (file_exists($moduleApiRoutes)) {
-        require $moduleApiRoutes;
-    }
-}
+// Module routes are auto-loaded by ModuleServiceProvider
+// Each module's routes are loaded from app/Modules/{ModuleName}/routes/api.php
+// Modules can be enabled/disabled via their config.php file
