@@ -1,0 +1,4 @@
+# Manufacturing Module Types
+extend type Query {
+    # Manufacturing queries will be added here
+}

@@ -1,0 +1,71 @@
+# POS Module Types
+type CashRegister {
+    id: ID!
+    company_id: ID!
+    name: String!
+    location: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type PosSession {
+    id: ID!
+    company_id: ID!
+    cash_register_id: ID!
+    session_number: String!
+    start_time: DateTime!
+    end_time: DateTime
+    opening_balance: Float!
+    total_sales: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type PosOrder {
+    id: ID!
+    company_id: ID!
+    pos_session_id: ID!
+    order_number: String!
+    order_date: DateTime!
+    subtotal: Float!
+    total_amount: Float!
+    status: String!
+    payment_status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# POS Module Inputs
+input CreatePosOrderInput {
+    company_id: ID!
+    pos_session_id: ID!
+    order_number: String! @rules(apply: ["required", "unique:pos_orders,order_number"])
+    order_date: DateTime!
+    subtotal: Float!
+    total_amount: Float!
+}
+
+input UpdatePosOrderInput {
+    subtotal: Float
+    total_amount: Float
+    status: String
+    payment_status: String
+}
+
+extend type Query {
+    cashRegisters: [CashRegister!]! @paginate(defaultCount: 15) @guard
+    cashRegister(id: ID! @eq): CashRegister @find @guard
+
+    posSessions: [PosSession!]! @paginate(defaultCount: 15) @guard
+    posSession(id: ID! @eq): PosSession @find @guard
+
+    posOrders: [PosOrder!]! @paginate(defaultCount: 15) @guard
+    posOrder(id: ID! @eq): PosOrder @find @guard
+}
+
+extend type Mutation {
+    createPosOrder(input: CreatePosOrderInput! @spread): PosOrder! @create @guard
+    updatePosOrder(id: ID!, input: UpdatePosOrderInput! @spread): PosOrder! @update @guard
+}

@@ -1,0 +1,115 @@
+# Sales Module Types
+type Customer {
+    id: ID!
+    company_id: ID!
+    name: String!
+    email: String
+    phone: String
+    customer_type: String!
+    payment_terms: String
+    credit_limit: Float
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Quote {
+    id: ID!
+    company_id: ID!
+    customer_id: ID!
+    quote_number: String!
+    quote_date: Date!
+    expiry_date: Date
+    subtotal: Float!
+    discount_amount: Float
+    tax_amount: Float
+    total_amount: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type SalesOrder {
+    id: ID!
+    company_id: ID!
+    customer_id: ID!
+    order_number: String!
+    order_date: Date!
+    expected_delivery_date: Date
+    subtotal: Float!
+    total_amount: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Invoice {
+    id: ID!
+    company_id: ID!
+    customer_id: ID!
+    invoice_number: String!
+    invoice_date: Date!
+    due_date: Date
+    subtotal: Float!
+    total_amount: Float!
+    status: String!
+    payment_status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Sales Module Inputs
+input CreateCustomerInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    customer_type: String! @rules(apply: ["required"])
+}
+
+input UpdateCustomerInput {
+    name: String @rules(apply: ["max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    is_active: Boolean
+}
+
+input CreateQuoteInput {
+    company_id: ID!
+    customer_id: ID!
+    quote_number: String! @rules(apply: ["required", "unique:quotes,quote_number"])
+    quote_date: Date!
+    subtotal: Float!
+    total_amount: Float!
+    status: String!
+}
+
+input UpdateQuoteInput {
+    subtotal: Float
+    total_amount: Float
+    status: String
+}
+
+extend type Query {
+    customers: [Customer!]! @paginate(defaultCount: 15) @guard
+    customer(id: ID! @eq): Customer @find @guard
+
+    quotes: [Quote!]! @paginate(defaultCount: 15) @guard
+    quote(id: ID! @eq): Quote @find @guard
+
+    salesOrders: [SalesOrder!]! @paginate(defaultCount: 15) @guard
+    salesOrder(id: ID! @eq): SalesOrder @find @guard
+
+    invoices: [Invoice!]! @paginate(defaultCount: 15) @guard
+    invoice(id: ID! @eq): Invoice @find @guard
+}
+
+extend type Mutation {
+    createCustomer(input: CreateCustomerInput! @spread): Customer! @create @guard
+    updateCustomer(id: ID!, input: UpdateCustomerInput! @spread): Customer! @update @guard
+    deleteCustomer(id: ID!): Customer @delete @guard
+
+    createQuote(input: CreateQuoteInput! @spread): Quote! @create @guard
+    updateQuote(id: ID!, input: UpdateQuoteInput! @spread): Quote! @update @guard
+    deleteQuote(id: ID!): Quote @delete @guard
+}

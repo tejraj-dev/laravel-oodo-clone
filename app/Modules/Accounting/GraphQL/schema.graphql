@@ -1,0 +1,4 @@
+# Accounting Module Types  
+extend type Query {
+    # Accounting queries will be added here
+}

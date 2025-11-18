@@ -3,6 +3,30 @@
 ## Overview
 This document provides comprehensive documentation for both REST and GraphQL APIs in the Laravel ERP system.
 
+## Architecture
+
+### Modular API Structure
+The Laravel ERP system uses a modular architecture where each module manages its own APIs:
+
+**Module Structure:**
+```
+app/Modules/{Module}/
+├── Http/
+│   ├── Controllers/Api/    # REST API controllers
+│   └── Resources/          # API resources (transformers)
+├── GraphQL/
+│   └── schema.graphql      # Module-specific GraphQL schema
+├── Models/                 # Eloquent models
+└── routes/
+    └── api.php            # Module API routes
+```
+
+**Benefits:**
+- **Separation of Concerns**: Each module is self-contained
+- **Scalability**: Easy to add or remove modules
+- **Maintainability**: Changes are isolated to specific modules
+- **Team Collaboration**: Different teams can work on different modules
+
 ## Base URLs
 - **REST API**: `http://your-domain.com/api/v1`
 - **GraphQL API**: `http://your-domain.com/graphql`

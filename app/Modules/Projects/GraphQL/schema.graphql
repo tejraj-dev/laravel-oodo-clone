@@ -1,0 +1,35 @@
+# Projects Module Types
+type Project {
+    id: ID!
+    company_id: ID!
+    customer_id: ID
+    name: String!
+    code: String
+    status: String!
+    start_date: Date
+    end_date: Date
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Task {
+    id: ID!
+    company_id: ID!
+    project_id: ID!
+    name: String!
+    description: String
+    status: String!
+    priority: String
+    due_date: Date
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+extend type Query {
+    projects: [Project!]! @paginate(defaultCount: 15) @guard
+    project(id: ID! @eq): Project @find @guard
+
+    tasks: [Task!]! @paginate(defaultCount: 15) @guard
+    task(id: ID! @eq): Task @find @guard
+}

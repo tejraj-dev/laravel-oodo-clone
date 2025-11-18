@@ -1,0 +1,47 @@
+# Purchase Module Types
+type Vendor {
+    id: ID!
+    company_id: ID!
+    name: String!
+    email: String
+    phone: String
+    vendor_type: String!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type PurchaseOrder {
+    id: ID!
+    company_id: ID!
+    vendor_id: ID!
+    order_number: String!
+    order_date: Date!
+    total_amount: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Bill {
+    id: ID!
+    company_id: ID!
+    vendor_id: ID!
+    bill_number: String!
+    bill_date: Date!
+    total_amount: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+extend type Query {
+    vendors: [Vendor!]! @paginate(defaultCount: 15) @guard
+    vendor(id: ID! @eq): Vendor @find @guard
+
+    purchaseOrders: [PurchaseOrder!]! @paginate(defaultCount: 15) @guard
+    purchaseOrder(id: ID! @eq): PurchaseOrder @find @guard
+
+    bills: [Bill!]! @paginate(defaultCount: 15) @guard
+    bill(id: ID! @eq): Bill @find @guard
+}

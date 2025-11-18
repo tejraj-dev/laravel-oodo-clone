@@ -1,0 +1,35 @@
+# HR Module Types
+type Employee {
+    id: ID!
+    company_id: ID!
+    user_id: ID
+    department_id: ID
+    employee_number: String!
+    first_name: String!
+    last_name: String!
+    email: String
+    phone: String
+    hire_date: Date
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Department {
+    id: ID!
+    company_id: ID!
+    name: String!
+    code: String
+    manager_id: ID
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+extend type Query {
+    employees: [Employee!]! @paginate(defaultCount: 15) @guard
+    employee(id: ID! @eq): Employee @find @guard
+
+    departments: [Department!]! @paginate(defaultCount: 15) @guard
+    department(id: ID! @eq): Department @find @guard
+}

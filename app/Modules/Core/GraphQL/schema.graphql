@@ -1,0 +1,61 @@
+# Core Module Types
+type Company {
+    id: ID!
+    name: String!
+    code: String!
+    email: String
+    phone: String
+    website: String
+    address: String
+    city: String
+    state: String
+    country: String
+    postal_code: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Currency {
+    id: ID!
+    code: String!
+    name: String!
+    symbol: String!
+    exchange_rate: Float!
+    decimal_places: Int!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Core Module Inputs
+input CreateCompanyInput {
+    name: String! @rules(apply: ["required", "max:255"])
+    code: String! @rules(apply: ["required", "max:50", "unique:companies,code"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    website: String
+    is_active: Boolean
+}
+
+input UpdateCompanyInput {
+    name: String @rules(apply: ["max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    website: String
+    is_active: Boolean
+}
+
+extend type Query {
+    companies: [Company!]! @paginate(defaultCount: 15) @guard
+    company(id: ID! @eq): Company @find @guard
+
+    currencies: [Currency!]! @paginate(defaultCount: 15) @guard
+    currency(id: ID! @eq): Currency @find @guard
+}
+
+extend type Mutation {
+    createCompany(input: CreateCompanyInput! @spread): Company! @create @guard
+    updateCompany(id: ID!, input: UpdateCompanyInput! @spread): Company! @update @guard
+    deleteCompany(id: ID!): Company @delete @guard
+}

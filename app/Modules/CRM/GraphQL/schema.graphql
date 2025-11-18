@@ -1,0 +1,92 @@
+# CRM Module Types
+type Lead {
+    id: ID!
+    company_id: ID!
+    name: String!
+    email: String
+    phone: String
+    company_name: String
+    title: String
+    source: String
+    status: String!
+    priority: String
+    rating: String
+    expected_revenue: Float
+    probability: Float
+    next_followup: Date
+    description: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Opportunity {
+    id: ID!
+    company_id: ID!
+    name: String!
+    expected_revenue: Float!
+    probability: Float!
+    stage: String!
+    status: String!
+    expected_closing_date: Date
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Contact {
+    id: ID!
+    company_id: ID!
+    name: String!
+    email: String
+    phone: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Account {
+    id: ID!
+    company_id: ID!
+    name: String!
+    type: String
+    industry: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# CRM Module Inputs
+input CreateLeadInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    company_name: String
+    source: String
+    status: String! @rules(apply: ["required"])
+}
+
+input UpdateLeadInput {
+    name: String @rules(apply: ["max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    status: String
+    description: String
+}
+
+extend type Query {
+    leads: [Lead!]! @paginate(defaultCount: 15) @guard
+    lead(id: ID! @eq): Lead @find @guard
+
+    opportunities: [Opportunity!]! @paginate(defaultCount: 15) @guard
+    opportunity(id: ID! @eq): Opportunity @find @guard
+
+    contacts: [Contact!]! @paginate(defaultCount: 15) @guard
+    contact(id: ID! @eq): Contact @find @guard
+
+    accounts: [Account!]! @paginate(defaultCount: 15) @guard
+    account(id: ID! @eq): Account @find @guard
+}
+
+extend type Mutation {
+    createLead(input: CreateLeadInput! @spread): Lead! @create @guard
+    updateLead(id: ID!, input: UpdateLeadInput! @spread): Lead! @update @guard
+    deleteLead(id: ID!): Lead @delete @guard
+}

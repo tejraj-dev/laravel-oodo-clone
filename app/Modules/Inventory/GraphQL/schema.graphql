@@ -1,0 +1,74 @@
+# Inventory Module Types
+type Product {
+    id: ID!
+    company_id: ID!
+    category_id: ID
+    name: String!
+    code: String!
+    description: String
+    product_type: String!
+    barcode: String
+    sale_price: Float
+    purchase_price: Float
+    cost: Float
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ProductCategory {
+    id: ID!
+    company_id: ID!
+    name: String!
+    code: String
+    description: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Warehouse {
+    id: ID!
+    company_id: ID!
+    name: String!
+    code: String!
+    location: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Inventory Module Inputs
+input CreateProductInput {
+    company_id: ID!
+    category_id: ID
+    name: String! @rules(apply: ["required", "max:255"])
+    code: String! @rules(apply: ["required", "max:50"])
+    product_type: String! @rules(apply: ["required"])
+    sale_price: Float
+    purchase_price: Float
+}
+
+input UpdateProductInput {
+    name: String @rules(apply: ["max:255"])
+    sale_price: Float
+    purchase_price: Float
+    is_active: Boolean
+}
+
+extend type Query {
+    products: [Product!]! @paginate(defaultCount: 15) @guard
+    product(id: ID! @eq): Product @find @guard
+
+    productCategories: [ProductCategory!]! @paginate(defaultCount: 15) @guard
+    productCategory(id: ID! @eq): ProductCategory @find @guard
+
+    warehouses: [Warehouse!]! @paginate(defaultCount: 15) @guard
+    warehouse(id: ID! @eq): Warehouse @find @guard
+}
+
+extend type Mutation {
+    createProduct(input: CreateProductInput! @spread): Product! @create @guard
+    updateProduct(id: ID!, input: UpdateProductInput! @spread): Product! @update @guard
+    deleteProduct(id: ID!): Product @delete @guard
+}
