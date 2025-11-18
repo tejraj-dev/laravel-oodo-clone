@@ -1,0 +1,142 @@
+# Import/Export Module Types
+
+type ImportTemplate {
+    id: ID!
+    company_id: ID!
+    name: String!
+    description: String
+    entity_type: String!
+    validation_rules: String
+    sample_file_path: String
+    is_system_template: Boolean!
+    is_active: Boolean!
+    usage_count: Int!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ImportJob {
+    id: ID!
+    company_id: ID!
+    user_id: ID!
+    user: User
+    import_template_id: ID
+    template: ImportTemplate
+    name: String!
+    entity_type: String!
+    file_name: String!
+    file_path: String!
+    file_size: Int!
+    file_type: String!
+    status: String!
+    total_rows: Int!
+    processed_rows: Int!
+    successful_rows: Int!
+    failed_rows: Int!
+    skipped_rows: Int!
+    progress: Float!
+    started_at: DateTime
+    completed_at: DateTime
+    failed_at: DateTime
+    error_message: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ExportJob {
+    id: ID!
+    company_id: ID!
+    user_id: ID!
+    user: User
+    name: String!
+    entity_type: String!
+    format: String!
+    file_name: String
+    file_path: String
+    file_size: Int
+    status: String!
+    total_rows: Int!
+    is_scheduled: Boolean!
+    schedule_frequency: String
+    next_run_at: DateTime
+    last_run_at: DateTime
+    started_at: DateTime
+    completed_at: DateTime
+    failed_at: DateTime
+    error_message: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Inputs
+
+input CreateImportTemplateInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    description: String
+    entity_type: String! @rules(apply: ["required"])
+    sample_file_path: String
+}
+
+input UpdateImportTemplateInput {
+    name: String @rules(apply: ["max:255"])
+    description: String
+    is_active: Boolean
+}
+
+input CreateImportJobInput {
+    company_id: ID!
+    user_id: ID!
+    import_template_id: ID
+    name: String! @rules(apply: ["required"])
+    entity_type: String! @rules(apply: ["required"])
+    file_name: String! @rules(apply: ["required"])
+    file_path: String! @rules(apply: ["required"])
+    file_size: Int!
+    file_type: String!
+}
+
+input CreateExportJobInput {
+    company_id: ID!
+    user_id: ID!
+    name: String! @rules(apply: ["required"])
+    entity_type: String! @rules(apply: ["required"])
+    format: String! @rules(apply: ["required"])
+    is_scheduled: Boolean
+    schedule_frequency: String
+}
+
+# Queries
+
+extend type Query {
+    importTemplates(entity_type: String @eq): [ImportTemplate!]! @paginate(defaultCount: 15) @guard
+    importTemplate(id: ID! @eq): ImportTemplate @find @guard
+
+    importJobs(
+        status: String @eq
+        entity_type: String @eq
+        user_id: ID @eq
+    ): [ImportJob!]! @paginate(defaultCount: 15) @guard
+    importJob(id: ID! @eq): ImportJob @find @guard
+
+    exportJobs(
+        status: String @eq
+        entity_type: String @eq
+        is_scheduled: Boolean @eq
+    ): [ExportJob!]! @paginate(defaultCount: 15) @guard
+    exportJob(id: ID! @eq): ExportJob @find @guard
+}
+
+# Mutations
+
+extend type Mutation {
+    createImportTemplate(input: CreateImportTemplateInput! @spread): ImportTemplate! @create @guard
+    updateImportTemplate(id: ID!, input: UpdateImportTemplateInput! @spread): ImportTemplate! @update @guard
+    deleteImportTemplate(id: ID!): ImportTemplate @delete @guard
+
+    createImportJob(input: CreateImportJobInput! @spread): ImportJob! @create @guard
+    deleteImportJob(id: ID!): ImportJob @delete @guard
+
+    createExportJob(input: CreateExportJobInput! @spread): ExportJob! @create @guard
+    deleteExportJob(id: ID!): ExportJob @delete @guard
+}
