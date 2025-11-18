@@ -1,0 +1,578 @@
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+"A date string with format `Y-m-d`, e.g. `2011-05-23`."
+scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
+
+#import auth.graphql
+#import core.graphql
+#import crm.graphql
+#import sales.graphql
+#import purchase.graphql
+#import inventory.graphql
+#import hr.graphql
+#import projects.graphql
+#import manufacturing.graphql
+#import accounting.graphql
+#import pos.graphql
+
+type Query {
+    # User queries
+    me: User @auth
+
+    user(id: ID @eq): User @find @guard
+
+    users(
+        name: String @where(operator: "like")
+        email: String @where(operator: "like")
+    ): [User!]! @paginate(defaultCount: 15) @guard
+
+    # Core module
+    companies: [Company!]! @paginate(defaultCount: 15) @guard
+    company(id: ID! @eq): Company @find @guard
+
+    currencies: [Currency!]! @paginate(defaultCount: 15) @guard
+    currency(id: ID! @eq): Currency @find @guard
+
+    # CRM module
+    leads: [Lead!]! @paginate(defaultCount: 15) @guard
+    lead(id: ID! @eq): Lead @find @guard
+
+    opportunities: [Opportunity!]! @paginate(defaultCount: 15) @guard
+    opportunity(id: ID! @eq): Opportunity @find @guard
+
+    contacts: [Contact!]! @paginate(defaultCount: 15) @guard
+    contact(id: ID! @eq): Contact @find @guard
+
+    accounts: [Account!]! @paginate(defaultCount: 15) @guard
+    account(id: ID! @eq): Account @find @guard
+
+    # Sales module
+    customers: [Customer!]! @paginate(defaultCount: 15) @guard
+    customer(id: ID! @eq): Customer @find @guard
+
+    quotes: [Quote!]! @paginate(defaultCount: 15) @guard
+    quote(id: ID! @eq): Quote @find @guard
+
+    salesOrders: [SalesOrder!]! @paginate(defaultCount: 15) @guard
+    salesOrder(id: ID! @eq): SalesOrder @find @guard
+
+    invoices: [Invoice!]! @paginate(defaultCount: 15) @guard
+    invoice(id: ID! @eq): Invoice @find @guard
+
+    # Purchase module
+    vendors: [Vendor!]! @paginate(defaultCount: 15) @guard
+    vendor(id: ID! @eq): Vendor @find @guard
+
+    purchaseOrders: [PurchaseOrder!]! @paginate(defaultCount: 15) @guard
+    purchaseOrder(id: ID! @eq): PurchaseOrder @find @guard
+
+    bills: [Bill!]! @paginate(defaultCount: 15) @guard
+    bill(id: ID! @eq): Bill @find @guard
+
+    # Inventory module
+    products: [Product!]! @paginate(defaultCount: 15) @guard
+    product(id: ID! @eq): Product @find @guard
+
+    productCategories: [ProductCategory!]! @paginate(defaultCount: 15) @guard
+    productCategory(id: ID! @eq): ProductCategory @find @guard
+
+    warehouses: [Warehouse!]! @paginate(defaultCount: 15) @guard
+    warehouse(id: ID! @eq): Warehouse @find @guard
+
+    # HR module
+    employees: [Employee!]! @paginate(defaultCount: 15) @guard
+    employee(id: ID! @eq): Employee @find @guard
+
+    departments: [Department!]! @paginate(defaultCount: 15) @guard
+    department(id: ID! @eq): Department @find @guard
+
+    # Projects module
+    projects: [Project!]! @paginate(defaultCount: 15) @guard
+    project(id: ID! @eq): Project @find @guard
+
+    tasks: [Task!]! @paginate(defaultCount: 15) @guard
+    task(id: ID! @eq): Task @find @guard
+
+    # POS module
+    cashRegisters: [CashRegister!]! @paginate(defaultCount: 15) @guard
+    cashRegister(id: ID! @eq): CashRegister @find @guard
+
+    posSessions: [PosSession!]! @paginate(defaultCount: 15) @guard
+    posSession(id: ID! @eq): PosSession @find @guard
+
+    posOrders: [PosOrder!]! @paginate(defaultCount: 15) @guard
+    posOrder(id: ID! @eq): PosOrder @find @guard
+}
+
+type Mutation {
+    # Auth mutations
+    login(email: String!, password: String!): AuthPayload @field(resolver: "App\\GraphQL\\Mutations\\Login")
+    logout: LogoutResponse @field(resolver: "App\\GraphQL\\Mutations\\Logout") @guard
+
+    # Core module
+    createCompany(input: CreateCompanyInput! @spread): Company! @create @guard
+    updateCompany(id: ID!, input: UpdateCompanyInput! @spread): Company! @update @guard
+    deleteCompany(id: ID!): Company @delete @guard
+
+    # CRM module
+    createLead(input: CreateLeadInput! @spread): Lead! @create @guard
+    updateLead(id: ID!, input: UpdateLeadInput! @spread): Lead! @update @guard
+    deleteLead(id: ID!): Lead @delete @guard
+
+    # Sales module
+    createCustomer(input: CreateCustomerInput! @spread): Customer! @create @guard
+    updateCustomer(id: ID!, input: UpdateCustomerInput! @spread): Customer! @update @guard
+    deleteCustomer(id: ID!): Customer @delete @guard
+
+    createQuote(input: CreateQuoteInput! @spread): Quote! @create @guard
+    updateQuote(id: ID!, input: UpdateQuoteInput! @spread): Quote! @update @guard
+    deleteQuote(id: ID!): Quote @delete @guard
+
+    # Inventory module
+    createProduct(input: CreateProductInput! @spread): Product! @create @guard
+    updateProduct(id: ID!, input: UpdateProductInput! @spread): Product! @update @guard
+    deleteProduct(id: ID!): Product @delete @guard
+
+    # POS module
+    createPosOrder(input: CreatePosOrderInput! @spread): PosOrder! @create @guard
+    updatePosOrder(id: ID!, input: UpdatePosOrderInput! @spread): PosOrder! @update @guard
+}
+
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    company_id: ID
+    company: Company @belongsTo
+    is_active: Boolean!
+    email_verified_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type AuthPayload {
+    access_token: String!
+    token_type: String!
+    user: User!
+}
+
+type LogoutResponse {
+    message: String!
+}
+
+# Core Module Types
+type Company {
+    id: ID!
+    name: String!
+    code: String!
+    email: String
+    phone: String
+    website: String
+    address: String
+    city: String
+    state: String
+    country: String
+    postal_code: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Currency {
+    id: ID!
+    code: String!
+    name: String!
+    symbol: String!
+    exchange_rate: Float!
+    decimal_places: Int!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# CRM Module Types
+type Lead {
+    id: ID!
+    company_id: ID!
+    name: String!
+    email: String
+    phone: String
+    company_name: String
+    title: String
+    source: String
+    status: String!
+    priority: String
+    rating: String
+    expected_revenue: Float
+    probability: Float
+    next_followup: Date
+    description: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Opportunity {
+    id: ID!
+    company_id: ID!
+    name: String!
+    expected_revenue: Float!
+    probability: Float!
+    stage: String!
+    status: String!
+    expected_closing_date: Date
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Contact {
+    id: ID!
+    company_id: ID!
+    name: String!
+    email: String
+    phone: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Account {
+    id: ID!
+    company_id: ID!
+    name: String!
+    type: String
+    industry: String
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Sales Module Types
+type Customer {
+    id: ID!
+    company_id: ID!
+    name: String!
+    email: String
+    phone: String
+    customer_type: String!
+    payment_terms: String
+    credit_limit: Float
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Quote {
+    id: ID!
+    company_id: ID!
+    customer_id: ID!
+    quote_number: String!
+    quote_date: Date!
+    expiry_date: Date
+    subtotal: Float!
+    discount_amount: Float
+    tax_amount: Float
+    total_amount: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type SalesOrder {
+    id: ID!
+    company_id: ID!
+    customer_id: ID!
+    order_number: String!
+    order_date: Date!
+    expected_delivery_date: Date
+    subtotal: Float!
+    total_amount: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Invoice {
+    id: ID!
+    company_id: ID!
+    customer_id: ID!
+    invoice_number: String!
+    invoice_date: Date!
+    due_date: Date
+    subtotal: Float!
+    total_amount: Float!
+    status: String!
+    payment_status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Purchase Module Types
+type Vendor {
+    id: ID!
+    company_id: ID!
+    name: String!
+    email: String
+    phone: String
+    vendor_type: String!
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type PurchaseOrder {
+    id: ID!
+    company_id: ID!
+    vendor_id: ID!
+    order_number: String!
+    order_date: Date!
+    total_amount: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Bill {
+    id: ID!
+    company_id: ID!
+    vendor_id: ID!
+    bill_number: String!
+    bill_date: Date!
+    total_amount: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Inventory Module Types
+type Product {
+    id: ID!
+    company_id: ID!
+    category_id: ID
+    name: String!
+    code: String!
+    description: String
+    product_type: String!
+    barcode: String
+    sale_price: Float
+    purchase_price: Float
+    cost: Float
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type ProductCategory {
+    id: ID!
+    company_id: ID!
+    name: String!
+    code: String
+    description: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Warehouse {
+    id: ID!
+    company_id: ID!
+    name: String!
+    code: String!
+    location: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# HR Module Types
+type Employee {
+    id: ID!
+    company_id: ID!
+    user_id: ID
+    department_id: ID
+    employee_number: String!
+    first_name: String!
+    last_name: String!
+    email: String
+    phone: String
+    hire_date: Date
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Department {
+    id: ID!
+    company_id: ID!
+    name: String!
+    code: String
+    manager_id: ID
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Projects Module Types
+type Project {
+    id: ID!
+    company_id: ID!
+    customer_id: ID
+    name: String!
+    code: String
+    status: String!
+    start_date: Date
+    end_date: Date
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Task {
+    id: ID!
+    company_id: ID!
+    project_id: ID!
+    name: String!
+    description: String
+    status: String!
+    priority: String
+    due_date: Date
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# POS Module Types
+type CashRegister {
+    id: ID!
+    company_id: ID!
+    name: String!
+    location: String
+    is_active: Boolean!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type PosSession {
+    id: ID!
+    company_id: ID!
+    cash_register_id: ID!
+    session_number: String!
+    start_time: DateTime!
+    end_time: DateTime
+    opening_balance: Float!
+    total_sales: Float!
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type PosOrder {
+    id: ID!
+    company_id: ID!
+    pos_session_id: ID!
+    order_number: String!
+    order_date: DateTime!
+    subtotal: Float!
+    total_amount: Float!
+    status: String!
+    payment_status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+# Input Types
+input CreateCompanyInput {
+    name: String! @rules(apply: ["required", "max:255"])
+    code: String! @rules(apply: ["required", "max:50", "unique:companies,code"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    website: String
+    is_active: Boolean
+}
+
+input UpdateCompanyInput {
+    name: String @rules(apply: ["max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    website: String
+    is_active: Boolean
+}
+
+input CreateLeadInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    company_name: String
+    source: String
+    status: String! @rules(apply: ["required"])
+}
+
+input UpdateLeadInput {
+    name: String @rules(apply: ["max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    status: String
+    description: String
+}
+
+input CreateCustomerInput {
+    company_id: ID!
+    name: String! @rules(apply: ["required", "max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    customer_type: String! @rules(apply: ["required"])
+}
+
+input UpdateCustomerInput {
+    name: String @rules(apply: ["max:255"])
+    email: String @rules(apply: ["email"])
+    phone: String
+    is_active: Boolean
+}
+
+input CreateQuoteInput {
+    company_id: ID!
+    customer_id: ID!
+    quote_number: String! @rules(apply: ["required", "unique:quotes,quote_number"])
+    quote_date: Date!
+    subtotal: Float!
+    total_amount: Float!
+    status: String!
+}
+
+input UpdateQuoteInput {
+    subtotal: Float
+    total_amount: Float
+    status: String
+}
+
+input CreateProductInput {
+    company_id: ID!
+    category_id: ID
+    name: String! @rules(apply: ["required", "max:255"])
+    code: String! @rules(apply: ["required", "max:50"])
+    product_type: String! @rules(apply: ["required"])
+    sale_price: Float
+    purchase_price: Float
+}
+
+input UpdateProductInput {
+    name: String @rules(apply: ["max:255"])
+    sale_price: Float
+    purchase_price: Float
+    is_active: Boolean
+}
+
+input CreatePosOrderInput {
+    company_id: ID!
+    pos_session_id: ID!
+    order_number: String! @rules(apply: ["required", "unique:pos_orders,order_number"])
+    order_date: DateTime!
+    subtotal: Float!
+    total_amount: Float!
+}
+
+input UpdatePosOrderInput {
+    subtotal: Float
+    total_amount: Float
+    status: String
+    payment_status: String
+}
