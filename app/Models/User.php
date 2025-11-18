@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Modules\Core\Models\Company;
+use App\Modules\Core\Traits\HasUuid;
 use App\Modules\HR\Models\Employee;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -16,7 +17,21 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
-    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, HasUuid;
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.
