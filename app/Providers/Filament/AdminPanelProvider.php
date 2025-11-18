@@ -31,6 +31,15 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/Core/Filament/Resources'), for: 'App\\Modules\\Core\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/CRM/Filament/Resources'), for: 'App\\Modules\\CRM\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/Sales/Filament/Resources'), for: 'App\\Modules\\Sales\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/Purchase/Filament/Resources'), for: 'App\\Modules\\Purchase\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/Inventory/Filament/Resources'), for: 'App\\Modules\\Inventory\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/HR/Filament/Resources'), for: 'App\\Modules\\HR\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/Projects/Filament/Resources'), for: 'App\\Modules\\Projects\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/Manufacturing/Filament/Resources'), for: 'App\\Modules\\Manufacturing\\Filament\\Resources')
+            ->discoverResources(in: app_path('Modules/Accounting/Filament/Resources'), for: 'App\\Modules\\Accounting\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
@@ -39,6 +48,18 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+            ])
+            ->navigationGroups([
+                'Dashboard',
+                'CRM',
+                'Sales',
+                'Purchase',
+                'Inventory',
+                'Manufacturing',
+                'HR',
+                'Projects',
+                'Accounting',
+                'Settings',
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -53,6 +74,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->sidebarCollapsibleOnDesktop()
+            ->brandName('Laravel ERP')
+            ->favicon(asset('favicon.ico'));
     }
 }
